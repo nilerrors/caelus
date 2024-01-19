@@ -1,0 +1,9 @@
+{
+	"authors": [
+		"nilerrors"
+	],
+	"copyright": "Copyright © 2024, nilerrors",
+	"description": "An ASM emulator",
+	"license": "MIT",
+	"name": "caelus"
+}
