@@ -5,6 +5,7 @@ import std.conv : to;
 import util;
 import token;
 import register;
+import directive;
 import instruction;
 
 const uint ASCII_0 = 48;
@@ -48,10 +49,7 @@ struct Lexer
                 tokens ~= Token(TokenType.comma, ",");
                 return;
             case '.':
-                tokens ~= Token(TokenType.dot, ".");
-                return;
-            case ':':
-                tokens ~= Token(TokenType.colon, ":");
+                this.handleDirective();
                 return;
             case ';':
                 this.skipUntil('\n');
@@ -62,6 +60,7 @@ struct Lexer
             case ASCII_0: .. case ASCII_9:
                 this.handleInt();
                 return;
+            case '_':
             case ASCII_UC_A: .. case ASCII_UC_Z:
             case ASCII_LC_A: .. case ASCII_LC_Z:
                 this.handleIdentifier();
@@ -85,6 +84,22 @@ struct Lexer
         tokens ~= Token(TokenType.register, name);
     }
 
+    void handleDirective() {
+        string name = ".";
+
+        while (this.canPeek() && this.peekIsLowercaseLetter()) {
+            this.pos++;
+            name ~= this.code[this.pos];
+        }
+
+        if (name.findInList(directives)) {
+            tokens ~= Token(TokenType.directive, name);
+            return;
+        }
+        
+        tokens ~= Token(TokenType.illegal, name);
+    }
+    
     void handleInt() {
         string integer = "";
         integer ~= this.code[this.pos];
@@ -101,16 +116,28 @@ struct Lexer
         string name = "";
         name ~= this.code[this.pos];
         
-        while (this.canPeek() && (this.peekIsInt() || this.peekIsLetter())) {
+        while (this.canPeek() && (this.peekIsInt() || this.peekIsLetter() || this.peek() == '_')) {
             this.pos++;
             name ~= this.code[this.pos];
         }
-
+        
+        this.skipSpacing();
+        if (this.canPeek() && this.peek() == ':') {
+            this.pos++;
+            tokens ~= Token(TokenType.label, name);
+            return;
+        }
         if (name.findInList(instructions)) {
             tokens ~= Token(TokenType.instruction, name);
+            return;
         }
-        else {
-            tokens ~= Token(TokenType.identifier, name);
+
+        tokens ~= Token(TokenType.identifier, name);
+    }
+
+    void skipSpacing() {
+        while (this.canPeek() && this.isSpacing()) {
+            this.pos++;
         }
     }
 

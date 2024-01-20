@@ -9,12 +9,12 @@ enum TokenType
     identifier = "<identifier>",
     instruction = "<instruction>",
     register = "<register>",        // starts with $
+    directive = "<directive>",      // starts with .
+    label = "<label>",              // ends with :
 
     integer = "<integer>",
     ascii_string = "<string>",
 
-    dot = ".",
-    colon = ":",
     comma = ",",
 }
 
